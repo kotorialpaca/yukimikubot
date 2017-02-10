@@ -56,10 +56,11 @@ func main() {
 
 	err = dg.Open()
 
-	AppendHandlers(dg)
 	if err != nil {
 		log.Fatalln("Discord session could not be opened: ", err)
 	}
+
+	AppendHandlers(dg)
 
 	fmt.Println("Yukimiku bot is now online.")
 	c := make(chan os.Signal, 1)
