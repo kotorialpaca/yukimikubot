@@ -1,10 +1,11 @@
-package yukimikubot
+package main
 
 import (
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
 
 	"encoding/json"
 
@@ -46,7 +47,7 @@ func main() {
 		Cfg.Prefix = "!"
 	}
 	// ** HANDLE DISCORD SESSION START
-	dg, err := discordgo.New("Bot " + token)
+	dg, err := discordgo.New(token)
 
 	if err != nil {
 		fmt.Println("Discord session creation failiure: ", err)
@@ -55,14 +56,15 @@ func main() {
 
 	err = dg.Open()
 
+	AppendHandlers(dg)
 	if err != nil {
 		log.Fatalln("Discord session could not be opened: ", err)
 	}
 
 	fmt.Println("Yukimiku bot is now online.")
-
-	<-make(chan struct{})
-	return
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill)
+	<-c
 
 }
 
