@@ -94,7 +94,7 @@ func (e Event) PrintPrettyString() string {
 	outstr = strings.Replace(outstr, "EVT_NAME", e.Name, -1)
 	outstr = strings.Replace(outstr, "AUTHOR", e.Author.Nick, -1)
 	outstr = strings.Replace(outstr, "DESC", e.Desc, -1)
-	outstr = strings.Replace(outstr, "CUR_MEM", strconv.Itoa(len(e.Members)), -1)
+	//outstr = strings.Replace(outstr, "CUR_MEM", strconv.Itoa(len(e.Members)), -1)
 	outstr = strings.Replace(outstr, "MAX_MEM", strconv.Itoa(e.MaxMember), -1)
 
 	return outstr
@@ -112,7 +112,7 @@ func (e Event) GroupsToString() string {
 		}
 	} else {
 		outstr = "**[Members]**\n"
-		for _, b := range e.Members {
+		for _, b := range e.Groups[0].Members {
 			outstr = outstr + "**[" + b.Nick + "]**\n"
 		}
 	}
