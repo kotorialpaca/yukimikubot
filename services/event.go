@@ -132,7 +132,7 @@ func (e Event) addGroupToEvent(gn string, max int, author discordgo.Member) {
 		e.Groups = newG
 	}
 	e.Groups = e.Groups[0 : n+1]
-	e.Groups = newGroup
+	e.Groups[n] = newGroup
 
 }
 
