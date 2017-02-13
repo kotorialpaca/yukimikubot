@@ -24,7 +24,6 @@ type Event struct {
 	Name      string
 	Author    discordgo.Member
 	Desc      string
-	Members   []discordgo.Member
 	MaxMember int
 	Groups    []Group
 	StartDate time.Time
@@ -123,10 +122,28 @@ func (e Event) GroupsToString() string {
 	return outstr
 }
 
-func (e Event) addToGroup(gn string, m discordgo.Member) error {
-	return errors.New("not yet implemented")
+func (e Event) addGroupToEvent(gn string, max int, author discordgo.Member)  {
+	newGroup := Group{
+		Name: gn,
+		MaxMember: max
+	}
+	e.Groups = addToSlice(e.Groups, newGroup)
 }
 
-func (e Event) addToEvent(m discordgo.Member) error {
-	return errors.New("not yet implemented")
+func (g Group) addMemberToGroup(m discordgo.Member) {
+	g.Members = addToSlice(g.Members, m)
+}
+
+func addToSlice(slice []interface{}}, element interface{}}) []interface{}}{
+	n := len(slice)
+	if n == cap(slice) {
+		// Slice is full; must grow.
+		// We double its size and add 1, so if the size is zero we still grow.
+		newSlice := make([]{}interface}, len(slice), len(slice)+1)
+		copy(newSlice, slice)
+		slice = newSlice
+	}
+	slice = slice[0 : n+1]
+	slice[n] = element
+	return slice
 }

@@ -15,6 +15,20 @@ func main() {
 		Deaf:     false,
 		Mute:     false,
 	}
+	m1 := discordgo.Member{
+		GuildID:  "1289307128937",
+		JoinedAt: "dkm kek",
+		Nick:     "user1",
+		Deaf:     false,
+		Mute:     false,
+	}
+	m2 := discordgo.Member{
+		GuildID:  "1289307128937",
+		JoinedAt: "dkm kek",
+		Nick:     "user2",
+		Deaf:     false,
+		Mute:     false,
+	}
 	evt := services.NewEvent("Test Event", "This is a test event!", "2017-02-01 04:00PM", "2017-02-01 05:00PM", m, 10)
 	fmt.Println(evt.PrintPrettyString())
 }
