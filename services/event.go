@@ -132,12 +132,12 @@ func (g Group) addMemberToGroup(m discordgo.Member) {
 	g.Members = addToSlice(g.Members, m)
 }
 
-func addToSlice(slice []interface{}, element interface{}) []interface{} {
+func addToSlice(slice interface{}, element interface{}) interface{} {
 	n := len(slice)
 	if n == cap(slice) {
 		// Slice is full; must grow.
 		// We double its size and add 1, so if the size is zero we still grow.
-		newSlice := make([]interface{}, len(slice), len(slice)+1)
+		newSlice := make(interface{}, len(slice), len(slice)+1)
 		copy(newSlice, slice)
 		slice = newSlice
 	}
