@@ -122,7 +122,7 @@ func (e Event) GroupsToString() string {
 	return outstr
 }
 
-func (e Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
+func (e &Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 	newGroup := Group{
 		Name:      gn,
 		MaxMember: max,
