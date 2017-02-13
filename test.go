@@ -31,9 +31,6 @@ func main() {
 	}
 	evt := services.NewEvent("Test Event", "This is a test event!", "2017-02-01 04:00PM", "2017-02-01 05:00PM", m, 10)
 	evt.AddGroupToEvent("DEEPS", 4, m)
-	for _, value := range evt.Groups {
-		fmt.Println(value.Name)
-	}
 	grp, err := evt.GetGroup("DEEPS")
 	if err != nil {
 		fmt.Println("idk y it no wurk, ", err)

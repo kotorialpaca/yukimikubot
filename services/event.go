@@ -99,6 +99,7 @@ func (e Event) PrintPrettyString() string {
 	//outstr = strings.Replace(outstr, "CUR_MEM", strconv.Itoa(len(e.Members)), -1)
 	outstr = strings.Replace(outstr, "MAX_MEM", strconv.Itoa(e.MaxMember), -1)
 
+	outstr = outstr + e.GroupsToString()
 	return outstr
 }
 
