@@ -145,7 +145,7 @@ func (e Event) GetGroup(gn string) (Group, error) {
 		}
 	}
 
-	return &Group{}, errors.New("cannot find, many keks")
+	return Group{}, errors.New("cannot find, many keks")
 }
 
 func (g Group) AddMemberToGroup(m discordgo.Member) {
