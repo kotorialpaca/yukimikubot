@@ -116,6 +116,7 @@ func (e Event) GroupsToString() string {
 	} else {
 		outstr = "**[Members]**\n"
 		for _, b := range e.Groups[0].Members {
+			fmt.Println(b.Nick)
 			outstr = outstr + b.Nick + "\n"
 		}
 	}
