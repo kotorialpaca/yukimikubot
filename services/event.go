@@ -140,16 +140,36 @@ func (e *Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 
 }
 
+func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) error {
+
+	for _, value := range e.Groups {
+		if value.Name == gn {
+			n := len(value.Members)
+			if n == cap(value.Members) {
+				newM := make([]discordgo.Member, len(value.Members), len(value.Members)+1)
+				copy(newM, value.Members)
+				value.Members = newM
+			}
+			value.Members = value.Members[0 : n+1]
+			value.Members[n] = m
+			return nil
+		} else {
+			return errors.New("groupdoesnotexisterror")
+		}
+	}
+}
+
 func (e *Event) GetGroup(gn string) (Group, error) {
 	for _, value := range e.Groups {
 		if value.Name == gn {
-			return &value, nil
+			return value, nil
 		}
 	}
 
 	return Group{}, errors.New("cannot find, many keks")
 }
 
+/*
 func (g *Group) AddMemberToGroup(m discordgo.Member) {
 
 	n := len(g.Members)
@@ -161,7 +181,7 @@ func (g *Group) AddMemberToGroup(m discordgo.Member) {
 	g.Members = g.Members[0 : n+1]
 	g.Members[n] = m
 }
-
+*/
 /*
 func addToGroup(slice interface{}, element interface{}) interface{} {
 	n := len(slice)
