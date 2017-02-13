@@ -125,7 +125,7 @@ func (e Event) GroupsToString() string {
 func (e Event) addGroupToEvent(gn string, max int, author discordgo.Member)  {
 	newGroup := Group{
 		Name: gn,
-		MaxMember: max
+		MaxMember: max,
 	}
 	e.Groups = addToSlice(e.Groups, newGroup)
 }
