@@ -36,12 +36,12 @@ func main() {
 	}
 	grp, err := evt.GetGroup("DEEPS")
 	if err != nil {
-		fmt.Println("idk y it no wurk")
+		fmt.Println("idk y it no wurk, ", err)
 	}
 	grp.AddMemberToGroup(m1)
 	grp, err = evt.GetGroup("DEEPS")
 	if err != nil {
-		fmt.Println("idk y it no wurk")
+		fmt.Println("idk y it no wurk, ", err)
 	}
 	grp.AddMemberToGroup(m2)
 	fmt.Println(evt.PrintPrettyString())
