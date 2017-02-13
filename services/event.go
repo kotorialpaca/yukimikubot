@@ -92,7 +92,7 @@ Max Members: MAX_MEM\n\n
 *josh*"
 */
 func (e *Event) PrintPrettyString() string {
-	outstr := ":star: **EVT_NAME** :star:\n__Started by: AUTHOR__\n\nDetails: DESC\n\nMembers: CUR_MEM\nMax Members: MAX_MEM\n\n"
+	outstr := ":star: **EVT_NAME** :star:\n__Started by: AUTHOR__\n\nDetails: DESC\n\nMax Members: MAX_MEM\n\n"
 	outstr = strings.Replace(outstr, "EVT_NAME", e.Name, -1)
 	outstr = strings.Replace(outstr, "AUTHOR", e.Author.Nick, -1)
 	outstr = strings.Replace(outstr, "DESC", e.Desc, -1)

@@ -39,6 +39,9 @@ func main() {
 	if err != nil {
 		fmt.Println("idk y it no wurk, ", err)
 	}
+	for _, value := range evt.Groups[0].Members {
+		fmt.Println(value.Nick)
+	}
 
 	fmt.Println(evt.PrintPrettyString())
 }
