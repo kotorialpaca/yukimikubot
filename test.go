@@ -34,5 +34,5 @@ func main() {
 	evt = services.AddMemberToGroup(evt, "DEEPS", m1)
 	evt = services.AddMemberToGroup(evt, "DEEPS", m2)
 
-	fmt.Println(evt.PrintPrettyString())
+	defer fmt.Println(evt.PrintPrettyString())
 }
