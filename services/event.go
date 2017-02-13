@@ -122,7 +122,7 @@ func (e Event) GroupsToString() string {
 	return outstr
 }
 
-func (e &Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
+func (e *Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 	newGroup := Group{
 		Name:      gn,
 		MaxMember: max,
@@ -138,7 +138,7 @@ func (e &Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 
 }
 
-func (e Event) GetGroup(gn string) (Group, error) {
+func (e *Event) GetGroup(gn string) (Group, error) {
 	for _, value := range e.Groups {
 		if value.Name == gn {
 			return value, nil
@@ -148,7 +148,7 @@ func (e Event) GetGroup(gn string) (Group, error) {
 	return Group{}, errors.New("cannot find, many keks")
 }
 
-func (g Group) AddMemberToGroup(m discordgo.Member) {
+func (g *Group) AddMemberToGroup(m discordgo.Member) {
 
 	n := len(g.Members)
 	if n == cap(g.Members) {
