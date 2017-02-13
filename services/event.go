@@ -153,10 +153,9 @@ func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) error {
 			value.Members = value.Members[0 : n+1]
 			value.Members[n] = m
 			return nil
-		} else {
-			return errors.New("groupdoesnotexisterror")
 		}
 	}
+	return errors.New("groupdoesnotexisterror")
 }
 
 func (e *Event) GetGroup(gn string) (Group, error) {
