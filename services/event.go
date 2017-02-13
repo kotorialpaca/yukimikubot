@@ -140,10 +140,10 @@ func (e *Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 
 }
 
-func (e *Event) GetGroup(gn string) (&Group, error) {
+func (e *Event) GetGroup(gn string) (*Group, error) {
 	for _, value := range e.Groups {
 		if value.Name == gn {
-			return &value, nil
+			return *value, nil
 		}
 	}
 
