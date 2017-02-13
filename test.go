@@ -30,5 +30,8 @@ func main() {
 		Mute:     false,
 	}
 	evt := services.NewEvent("Test Event", "This is a test event!", "2017-02-01 04:00PM", "2017-02-01 05:00PM", m, 10)
+	evt.AddGroupToEvent("DEEPS", 4, m)
+	evt.FindGroup("DEEPS").AddMemberToGroup(m1)
+	evt.FindGroup("DEEPS").AddMemberToGroup(m2)
 	fmt.Println(evt.PrintPrettyString())
 }
