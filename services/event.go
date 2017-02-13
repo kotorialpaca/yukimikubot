@@ -125,14 +125,30 @@ func (e Event) addGroupToEvent(gn string, max int, author discordgo.Member) {
 		Name:      gn,
 		MaxMember: max,
 	}
-	e.Groups = addToSlice(e.Groups, newGroup)
+	n := len(e.Groups)
+	if n == cap(e.Groups) {
+		newG := make([]Group, len(e.Groups), len(e.Groups)+1)
+		copy(newG, e.Groups)
+		e.Groups = newG
+	}
+	e.Groups = e.Groups[0 : n+1]
+	e.Groups = newGroup
+
 }
 
 func (g Group) addMemberToGroup(m discordgo.Member) {
-	g.Members = addToSlice(g.Members, m)
+	n := len(g.Members)
+	if n == cap(g.Members) {
+		newM := make([]discordgo.Member, len(g.Members), len(g.Members)+1)
+		copy(newM, g.Members)
+		g.Members = newM
+	}
+	g.Members = g.Members[0 : n+1]
+	g.Members[n] = m
 }
 
-func addToSlice(slice interface{}, element interface{}) interface{} {
+/*
+func addToGroup(slice interface{}, element interface{}) interface{} {
 	n := len(slice)
 	if n == cap(slice) {
 		// Slice is full; must grow.
@@ -145,3 +161,4 @@ func addToSlice(slice interface{}, element interface{}) interface{} {
 	slice[n] = element
 	return slice
 }
+*/
