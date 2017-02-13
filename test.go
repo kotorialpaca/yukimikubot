@@ -29,19 +29,10 @@ func main() {
 		Deaf:     false,
 		Mute:     false,
 	}
-	evt := services.NewEvent("Test Event", "This is a test event!", "2017-02-01 04:00PM", "2017-02-01 05:00PM", m, 10)
-	evt.AddGroupToEvent("DEEPS", 4, m)
-	err := evt.AddMemberToGroup("DEEPS", m1)
-	if err != nil {
-		fmt.Println("idk y it no wurk, ", err)
-	}
-	err = evt.AddMemberToGroup("DEEPS", m2)
-	if err != nil {
-		fmt.Println("idk y it no wurk, ", err)
-	}
-	for _, value := range evt.Groups[0].Members {
-		fmt.Println(value.Nick)
-	}
+	evt := &services.NewEvent("Test Event", "This is a test event!", "2017-02-01 04:00PM", "2017-02-01 05:00PM", m, 10)
+	evt = services.AddGroupToEvent(evt, "DEEPS", 4, m)
+	evt = services.AddMemberToGroup(evt, "DEEPS", m1)
+	evt = services.AddMemberToGroup(evt, "DEEPS", m2)
 
 	fmt.Println(evt.PrintPrettyString())
 }

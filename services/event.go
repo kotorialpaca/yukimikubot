@@ -124,7 +124,7 @@ func (e *Event) GroupsToString() string {
 	return outstr
 }
 
-func (e *Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
+func AddGroupToEvent(e *Event, gn string, max int, author discordgo.Member) *Event {
 	newGroup := Group{
 		Name:      gn,
 		MaxMember: max,
@@ -138,9 +138,10 @@ func (e *Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 	e.Groups = e.Groups[0 : n+1]
 	e.Groups[n] = newGroup
 
+	return e
 }
 
-func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) error {
+func AddMemberToGroup(e *Event, gn string, m discordgo.Member) *Event {
 
 	for _, value := range e.Groups {
 		if value.Name == gn {
@@ -152,10 +153,10 @@ func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) error {
 			}
 			value.Members = value.Members[0 : n+1]
 			value.Members[n] = m
-			return nil
+			return e
 		}
 	}
-	return errors.New("groupdoesnotexisterror")
+	return e
 }
 
 func (e *Event) GetGroup(gn string) (Group, error) {
