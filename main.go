@@ -1,19 +1,21 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"os/signal"
 
-	"encoding/json"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 var token string
 var buffer = make([][]byte, 0)
+
+//Cfg is the config of the bot defined on settings.conf
 var Cfg Config
 
 func main() {
@@ -31,6 +33,9 @@ func main() {
 		}
 	}
 
+	token = string(body)
+	fmt.Println(token)
+
 	if len(body) != 59 {
 		log.Fatalf("invalid bot token, please check your bot token and try again.")
 	}
@@ -41,13 +46,25 @@ func main() {
 	if err != nil {
 		fmt.Println("error opening config file: ", err)
 	}
-	err = json.Unmarshal(raw, Cfg)
-
+	err = json.Unmarshal(raw, &Cfg)
 	if err != nil {
-		Cfg.Prefix = "!"
+		fmt.Println("error has occurred during unmarshal process, ", err)
+	}
+
+	// Video Caching Enabled
+	if Cfg.CacheEnabled {
+		fmt.Println("playback caching enabled")
+		if _, err := os.Stat("cache"); err != nil {
+			os.Mkdir("cache", 770)
+			fmt.Println("cache directory created")
+		} else {
+			fmt.Println("cache directory exists")
+		}
+	} else {
+		fmt.Println("playback caching disabled")
 	}
 	// ** HANDLE DISCORD SESSION START
-	dg, err := discordgo.New(token)
+	dg, err := discordgo.New("Bot " + token)
 
 	if err != nil {
 		fmt.Println("Discord session creation failiure: ", err)
@@ -55,20 +72,32 @@ func main() {
 	}
 
 	err = dg.Open()
-
+	// Append Handlers
+	AppendHandlers(dg)
 	if err != nil {
 		log.Fatalln("Discord session could not be opened: ", err)
 	}
 
-	AppendHandlers(dg)
+	fmt.Println(Cfg.Name + " is now online.")
+	u, err := dg.User("@me")
+	fmt.Println(u.ID)
+	if err != nil {
+		fmt.Println("error getting account details, ", err)
+	}
+	fmt.Println("To join this bot to the server, go to ")
 
-	fmt.Println("Yukimiku bot is now online.")
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
-	<-c
+	url := strings.Replace(Cfg.OauthLink, "CID", u.ID, -1)
+	fmt.Println(url)
+	<-make(chan struct{})
+	return
 
 }
 
+//Config structure of the bot defined on settings.conf
 type Config struct {
-	Prefix string `json:"prefix"`
+	Name         string `json:"name"`
+	Prefix       string `json:"prefix"`
+	CacheEnabled bool   `json:"cache_enabled"`
+	Status       string `json:"status"`
+	OauthLink    string `json:"oauth_link"`
 }
