@@ -91,7 +91,7 @@ Max Members: MAX_MEM\n\n
 *lima*
 *josh*"
 */
-func (e Event) PrintPrettyString() string {
+func (e *Event) PrintPrettyString() string {
 	outstr := ":star: **EVT_NAME** :star:\n__Started by: AUTHOR__\n\nDetails: DESC\n\nMembers: CUR_MEM\nMax Members: MAX_MEM\n\n"
 	outstr = strings.Replace(outstr, "EVT_NAME", e.Name, -1)
 	outstr = strings.Replace(outstr, "AUTHOR", e.Author.Nick, -1)
@@ -104,7 +104,7 @@ func (e Event) PrintPrettyString() string {
 }
 
 //GroupsToString returns string representation of the groups
-func (e Event) GroupsToString() string {
+func (e *Event) GroupsToString() string {
 	outstr := ""
 	if len(e.Groups) != 0 {
 		for _, b := range e.Groups {
