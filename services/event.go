@@ -161,6 +161,10 @@ func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) {
 
 }
 
+func (e *Event) RemoveMemberFromGroup(m discordgo.Member) {
+	newGroups
+}
+
 //func GenerateNewMemberList(li []discordgo.Member)
 
 func (e *Event) GetGroup(gn string) (Group, error) {
