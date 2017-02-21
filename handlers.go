@@ -7,6 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+//AppendHandlers function - Adds all the handlers previously declared somewhere in the package
 func AppendHandlers(s *discordgo.Session) {
 
 	s.AddHandler(setStatus)
@@ -21,7 +22,6 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(m.Message.Content, Cfg.Prefix) {
 		fmt.Println(m.Author, " -> ", m.Message.Content)
 	}
-	
 
 }
 

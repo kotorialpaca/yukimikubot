@@ -69,6 +69,7 @@ func NewGroup(n string, max int) *Group {
 }
 
 /*
+PrintPrettyString will print prettified string of event detaills.
 ":star: **EVT_NAME** :star:\n
 __Started by: AUTHOR__\n\n
 
@@ -140,6 +141,7 @@ func (e *Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 
 }
 
+//AddMemberToGroup will add the member discordgo.Member to the group as an object
 func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) {
 	newGroups := e.Groups
 	for key, value := range newGroups {
@@ -161,8 +163,19 @@ func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) {
 
 }
 
-func (e *Event) RemoveMemberFromGroup(m discordgo.Member) {
-	newGroups
+func (e *Event) RemoveMemberFromGroup(gn string, m discordgo.Member) {
+	newGroups := e.Groups
+	newG := Group{}
+	for _, value := range newGroups {
+		//If group name and the current iteration of the group matches then
+		if strings.Compare(gn, value.Name) == 0 {
+			for k, v := range value.Members {
+				if strings.Compare(m.Nick, v.Nick) == 0 {
+					return
+				}
+			}
+		}
+	}
 }
 
 //func GenerateNewMemberList(li []discordgo.Member)
