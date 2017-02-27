@@ -29,12 +29,22 @@ func main() {
 		Deaf:     false,
 		Mute:     false,
 	}
-	evt := services.NewEvent("Test Event", "This is a test event!", "2017-02-01 04:00PM", "2017-02-01 05:00PM", m, 10)
+
+	evt := services.NewEvent("Test Event", "This is a test event!", "2017-02-01 04:00PM", "2017-02-01 05:00PM", m, 10, true)
 	evt.AddGroupToEvent("DEEPS", 4, m)
 	evt.AddMemberToGroup("DEEPS", m1)
 	evt.AddMemberToGroup("DEEPS", m2)
 	for _, value := range evt.Groups[0].Members {
 		fmt.Println(value.Nick)
 	}
+	fmt.Println(evt.PrintPrettyString())
+
+	fmt.Println("removing an existing member from group")
+
+	evt.RemoveMemberFromGroup("DEEPS", m1)
+
+	fmt.Println("removed member: ", m1.Nick)
+
 	defer fmt.Println(evt.PrintPrettyString())
+
 }

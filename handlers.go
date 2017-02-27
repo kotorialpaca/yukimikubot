@@ -20,7 +20,31 @@ func AppendHandlers(s *discordgo.Session) {
 func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	fmt.Println(m.Message.Content)
 	if strings.HasPrefix(m.Message.Content, Cfg.Prefix) {
+		//Test Print Output Author -> Message
 		fmt.Println(m.Author, " -> ", m.Message.Content)
+		switch cmd := strings.Split(m.Message.Content, " "); strings.ToLower(cmd[0][1:]) {
+		/*
+			!event add
+			!event modify
+			!event remove
+			!event list
+		*/
+		case "event":
+			switch strings.ToLower(cmd[1]) {
+			case "add":
+
+			case "modify":
+
+			case "remove":
+
+			case "list":
+
+			default:
+				s.ChannelMessageSend(m.ChannelID, "Error - Invalid Command\nDISPLAY EVENT HELP HERE")
+				return
+			}
+		}
+
 	}
 
 }
