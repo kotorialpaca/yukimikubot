@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/kotorialpaca/yukimikubot/services"
+	"github.com/kotorialpaca/yukimikubot/controllers"
 )
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 		Mute:     false,
 	}
 
-	evt := services.NewEvent("Test Event", "This is a test event!", "2017-02-01 04:00PM", "2017-02-01 05:00PM", m, 10, true)
+	evt, _ := services.NewEvent("Test Event", "This is a test event!", "2017-02-01 04:00PM", "2017-02-01 05:00PM", m, 10, true)
 	evt.AddGroupToEvent("DEEPS", 4, m)
 	evt.AddMemberToGroup("DEEPS", m1)
 	evt.AddMemberToGroup("DEEPS", m2)
@@ -45,6 +45,10 @@ func main() {
 
 	fmt.Println("removed member: ", m1.Nick)
 
+	fmt.Println(evt.PrintPrettyString())
+
+	fmt.Println("removing default group")
+	evt.RemoveGroup("DefaultGroup")
 	defer fmt.Println(evt.PrintPrettyString())
 
 }

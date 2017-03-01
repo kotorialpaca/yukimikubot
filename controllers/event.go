@@ -1,4 +1,4 @@
-package services
+package controllers
 
 import (
 	"strings"
@@ -15,30 +15,31 @@ import (
 
 //EventGroup object which groups all the Event objects
 type EventGroup struct {
-	Name   string
-	Events []Event
+	Name   string  `json:"name"`
+	Events []Event `json:"events"`
 }
 
 //Event object to represent events for the Discord chat
 type Event struct {
-	Name      string
-	Author    discordgo.Member
-	Desc      string
-	MaxMember int
-	Groups    []Group
-	StartDate time.Time
-	EndDate   time.Time
+	ID        int              `json:"id"`
+	Name      string           `json:"name"`
+	Author    discordgo.Member `json:"author"`
+	Desc      string           `json:"desc"`
+	MaxMember int              `json:"max_member"`
+	Groups    []Group          `json:"groups"`
+	StartDate time.Time        `json:"start_date"`
+	EndDate   time.Time        `json:"end_date"`
 }
 
 //Group object for storing groups split within an Event object
 type Group struct {
-	Name      string
-	Members   []discordgo.Member
-	MaxMember int
+	Name      string             `json:"name"`
+	Members   []discordgo.Member `json:"members"`
+	MaxMember int                `json:"max_members"`
 }
 
 //NewEvent returns a new Event object
-func NewEvent(n string, d string, sd string, ed string, u discordgo.Member, m int, def bool) *Event {
+func NewEvent(n string, d string, sd string, ed string, u discordgo.Member, m int, def bool) (*Event, error) {
 	layout := "2006-01-02 03:04PM"
 	//Start Time in Time variable
 	stt, err := time.Parse(layout, sd)
@@ -59,7 +60,7 @@ func NewEvent(n string, d string, sd string, ed string, u discordgo.Member, m in
 			EndDate:   ett,
 		}
 		newEvent.AddGroupToEvent("DefaultGroup", 100, u)
-		return newEvent
+		return newEvent, nil
 	} else {
 		return &Event{
 			Name:      n,
@@ -68,7 +69,7 @@ func NewEvent(n string, d string, sd string, ed string, u discordgo.Member, m in
 			MaxMember: m,
 			StartDate: stt,
 			EndDate:   ett,
-		}
+		}, nil
 	}
 }
 
@@ -158,8 +159,8 @@ func (e *Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 
 //AddMemberToGroup will add the member discordgo.Member to the group as an object
 func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) error {
-	newGroups := e.Groups
-	for key, value := range newGroups {
+
+	for key, value := range e.Groups {
 		if strings.Compare(value.Name, gn) == 0 {
 			if len(value.Members) == value.MaxMember {
 				return errors.New("member full")
@@ -172,30 +173,43 @@ func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) error {
 			}
 			value.Members = value.Members[0 : n+1]
 			value.Members[n] = m
-			newGroups[key] = value
+			e.Groups[key] = value
 
 		}
 
 	}
-	e.Groups = newGroups
+
 	return nil
 
 }
 
-func (e *Event) RemoveMemberFromGroup(gn string, m discordgo.Member) {
-	newGroups := e.Groups
-	for key, value := range newGroups {
+func (e *Event) RemoveMemberFromGroup(gn string, m discordgo.Member) error {
+	for key, value := range e.Groups {
 		//If group name and the current iteration of the group matches then
 		if strings.Compare(gn, value.Name) == 0 {
 			for k, v := range value.Members {
 				if strings.Compare(m.Nick, v.Nick) == 0 {
-					value.Members = RemoveFromGroup(value.Members, k)
+					value.Members = RemoveMemberFromGroup(value.Members, k)
 					e.Groups[key] = value
+					return nil
 				}
 			}
 		}
 	}
+	return errors.New("specified group name or member couldnt not be found")
 
+}
+
+func (e *Event) RemoveGroup(gn string) error {
+
+	for key, value := range e.Groups {
+		if strings.Compare(value.Name, gn) == 0 {
+			e.Groups = RemoveGroup(e.Groups, key)
+			return nil
+		}
+	}
+
+	return errors.New("specified group name could not be found")
 }
 
 //func GenerateNewMemberList(li []discordgo.Member)
@@ -210,7 +224,11 @@ func (e *Event) GetGroup(gn string) (Group, error) {
 	return Group{}, errors.New("cannot find, many keks")
 }
 
-func RemoveFromGroup(s []discordgo.Member, i int) []discordgo.Member {
+func RemoveMemberFromGroup(s []discordgo.Member, i int) []discordgo.Member {
+	return append(s[:i], s[i+1:]...)
+}
+
+func RemoveGroup(s []Group, i int) []Group {
 	return append(s[:i], s[i+1:]...)
 }
 
