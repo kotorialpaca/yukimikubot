@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
 
@@ -10,18 +11,21 @@ import (
 
 	"errors"
 
+	"github.com/kotorialpaca/yukimikubot/helper"
+
+	"github.com/boltdb/bolt"
 	"github.com/bwmarrin/discordgo"
 )
 
 //EventGroup object which groups all the Event objects
 type EventGroup struct {
-	Name   string  `json:"name"`
-	Events []Event `json:"events"`
+	GuildID string  `json:"guild_id"`
+	Events  []Event `json:"events"`
 }
 
 //Event object to represent events for the Discord chat
 type Event struct {
-	ID        int              `json:"id"`
+	ID        uint64           `json:"id"`
 	Name      string           `json:"name"`
 	Author    discordgo.Member `json:"author"`
 	Desc      string           `json:"desc"`
@@ -29,6 +33,7 @@ type Event struct {
 	Groups    []Group          `json:"groups"`
 	StartDate time.Time        `json:"start_date"`
 	EndDate   time.Time        `json:"end_date"`
+	GuildID   string           `json:"guild_id"`
 }
 
 //Group object for storing groups split within an Event object
@@ -39,7 +44,7 @@ type Group struct {
 }
 
 //NewEvent returns a new Event object
-func NewEvent(n string, d string, sd string, ed string, u discordgo.Member, m int, def bool) (*Event, error) {
+func NewEvent(n string, sd string, ed string, u discordgo.Member, m int, def bool, gID string) (*Event, error) {
 	layout := "2006-01-02 03:04PM"
 	//Start Time in Time variable
 	stt, err := time.Parse(layout, sd)
@@ -50,27 +55,96 @@ func NewEvent(n string, d string, sd string, ed string, u discordgo.Member, m in
 	if err != nil {
 		fmt.Println("welp something went wrong while creating an event")
 	}
-	if def {
-		newEvent := &Event{
-			Name:      n,
-			Desc:      d,
-			Author:    u,
-			MaxMember: m,
-			StartDate: stt,
-			EndDate:   ett,
-		}
-		newEvent.AddGroupToEvent("DefaultGroup", 100, u)
-		return newEvent, nil
-	} else {
-		return &Event{
-			Name:      n,
-			Desc:      d,
-			Author:    u,
-			MaxMember: m,
-			StartDate: stt,
-			EndDate:   ett,
-		}, nil
+	newEvent := &Event{
+		Name:      n,
+		Author:    u,
+		MaxMember: m,
+		StartDate: stt,
+		EndDate:   ett,
+		GuildID:   gID,
 	}
+	if def {
+		newEvent.AddGroupToEvent("DefaultGroup", 100, u)
+	}
+
+	if err != nil {
+		return &Event{}, nil
+	}
+
+	err = newEvent.UpdateEvent()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return newEvent, nil
+}
+
+func (e *Event) UpdateEvent() error {
+
+	ndb, err := bolt.Open(e.GuildID, 0600, nil)
+	if err != nil {
+		return err
+	}
+
+	ndb.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte("event"))
+
+		if err != nil {
+			return err
+		}
+		if e.ID == 0 {
+			id, _ := b.NextSequence()
+			e.ID = id
+		}
+
+		buf, err := json.Marshal(e)
+
+		if err != nil {
+			return err
+		}
+
+		return b.Put(helper.Itob(e.ID), buf)
+	})
+
+	return nil
+}
+
+func (eg *EventGroup) RetrieveEvents() error {
+	ndb, err := bolt.Open(eg.GuildID, 0600, nil)
+	if err != nil {
+		return err
+	}
+	ndb.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("event"))
+
+		c := b.Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			n := len(eg.Events)
+			if n == cap(eg.Events) {
+				newSlice := make([]Event, len(eg.Events), len(eg.Events)+1)
+				copy(newSlice, eg.Events)
+				eg.Events = newSlice
+			}
+			eg.Events = eg.Events[0 : n+1]
+
+			evt := &Event{}
+
+			err := json.Unmarshal(v, &evt)
+
+			if err != nil {
+				return err
+			}
+
+			eg.Events[n] = *evt
+		}
+
+		return nil
+	})
+
+	return nil
+
 }
 
 //NewGroup returns a new Group object within Event

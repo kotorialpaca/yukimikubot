@@ -22,13 +22,13 @@ func AppendHandlers(s *discordgo.Session) {
 func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	fmt.Println(m.Message.Content)
 	ch, _ := s.Channel(m.ChannelID)
-	creator, _ := s.GuildMember(ch.GuildID, m.Author)
+	creator, _ := s.GuildMember(ch.GuildID, m.Author.ID)
 	if strings.HasPrefix(m.Message.Content, Cfg.Prefix) {
 		//Test Print Output Author -> Message
 		fmt.Println(m.Author, " -> ", m.Message.Content)
 		switch cmd := strings.Split(m.Message.Content, " "); strings.ToLower(cmd[0][1:]) {
 		/*
-			!event add
+			!event add NAME START_DATE END_DATE MAX_MEM(OPTIONAL) DEFAULTGROUP(OPTIONAL)
 			!event modify
 			!event remove
 			!event list
@@ -36,18 +36,38 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		case "event":
 			switch strings.ToLower(cmd[1]) {
 			case "add":
-
-				max, err := strconv.Atoi(cmd[6])
-				if err != nil {
-					s.ChannelMessageSend(m.ChannelID, strings.Replace("@user, Error - Invalid Argument for Max Number", "user", creator.Nick))
+				maxnum := 0
+				defa := false
+				if len(cmd) == 5 {
+					maxnum = 100
+					defa = true
+				} else if len(cmd) < 5 {
+					s.ChannelMessageSend(m.ChannelID, strings.Replace("@user, Error - Insufficient number of arguments given", "user", creator.Nick, -1))
+					return
+				} else {
+					max, err := strconv.Atoi(cmd[5])
+					maxnum = max
+					if err != nil {
+						s.ChannelMessageSend(m.ChannelID, strings.Replace("@user, Error - Invalid Argument for Max Number", "user", creator.Nick, -1))
+						return
+					}
+					d, err := strconv.ParseBool(cmd[6])
+					defa = d
+					if err != nil {
+						s.ChannelMessageSend(m.ChannelID, strings.Replace("@user, Error - Invalid Argument for Default Group", "user", creator.Nick, -1))
+						return
+					}
 				}
-				d, err := strconv.ParseBool(cmd[7])
-				if err != nil {
-					s.ChannelMessageSend(m.ChannelID, strings.Replace("@user, Error - Invalid Argument for Default Group", "user", creator.Nick))
-				}
-
-				newEvt, err := services.NewEvent(cmd[2], cmd[3], cmd[4], cmd[5], creator, max, d)
+				newEvt, err := controllers.NewEvent(cmd[2], cmd[3], cmd[4], *creator, maxnum, defa, ch.GuildID)
 				//Implement DB Interaction
+				if err != nil {
+					s.ChannelMessageSend(m.ChannelID, strings.Replace("@user, Error - Event Creation has failed", "user", creator.Nick, -1))
+					return
+				}
+
+				s.ChannelMessageSend(m.ChannelID, strings.Replace("@user, Event has been successfully created!", "user", creator.Nick, -1))
+				s.ChannelMessageSend(m.ChannelID, newEvt.PrintPrettyString())
+				return
 			case "modify":
 				switch strings.ToLower(cmd[2]) {
 
@@ -58,10 +78,14 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			case "signup":
 
+			//default for event param
 			default:
 				s.ChannelMessageSend(m.ChannelID, "Error - Invalid Command\nDISPLAY EVENT HELP HERE")
 				return
 			}
+		default:
+			s.ChannelMessageSend(m.ChannelID, strings.Replace("Cannot recognize command, try #prxhelp", "#prx", Cfg.Prefix, -1))
+			return
 		}
 
 	}
