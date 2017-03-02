@@ -11,8 +11,6 @@ import (
 
 	"errors"
 
-	"github.com/kotorialpaca/yukimikubot/helper"
-
 	"github.com/boltdb/bolt"
 	"github.com/bwmarrin/discordgo"
 )
@@ -44,45 +42,54 @@ type Group struct {
 }
 
 //NewEvent returns a new Event object
-func NewEvent(n string, sd string, ed string, u discordgo.Member, m int, def bool, gID string) (*Event, error) {
-	layout := "2006-01-02 03:04PM"
+func NewEvent(n string, u discordgo.Member, m int, gID string) (*Event, error) {
 	//Start Time in Time variable
-	stt, err := time.Parse(layout, sd)
-	if err != nil {
-		fmt.Println("welp something went wrong while creating an event")
-	}
-	ett, err := time.Parse(layout, ed)
-	if err != nil {
-		fmt.Println("welp something went wrong while creating an event")
-	}
+
 	newEvent := &Event{
 		Name:      n,
 		Author:    u,
 		MaxMember: m,
-		StartDate: stt,
-		EndDate:   ett,
 		GuildID:   gID,
 	}
-	if def {
-		newEvent.AddGroupToEvent("DefaultGroup", 100, u)
-	}
+
+	err := newEvent.UpdateEvent()
 
 	if err != nil {
-		return &Event{}, nil
-	}
-
-	err = newEvent.UpdateEvent()
-
-	if err != nil {
-		return nil, err
+		return newEvent, err
 	}
 
 	return newEvent, nil
 }
 
+func (e *Event) AddStartDate(d string) error {
+	layout := "2006-01-02 03:04PM"
+
+	sd, err := time.Parse(layout, d)
+	if err != nil {
+		fmt.Println("time parsing failed")
+		return err
+	}
+	fmt.Println(sd)
+	e.StartDate = sd
+	return nil
+}
+
+func (e *Event) AddEndDate(d string) error {
+	layout := "2006-01-02 03:04PM"
+
+	ed, err := time.Parse(layout, d)
+	if err != nil {
+		fmt.Println("time parsing failed")
+		return err
+	}
+	e.EndDate = ed
+	return nil
+}
+
 func (e *Event) UpdateEvent() error {
 
 	ndb, err := bolt.Open(e.GuildID, 0600, nil)
+
 	if err != nil {
 		return err
 	}
@@ -104,10 +111,42 @@ func (e *Event) UpdateEvent() error {
 			return err
 		}
 
-		return b.Put(helper.Itob(e.ID), buf)
+		return b.Put([]byte(strings.ToLower(e.Name)), buf)
 	})
 
+	defer ndb.Close()
 	return nil
+}
+
+func FindEvent(gid string, en string) (*Event, error) {
+
+	retEvt := &Event{}
+
+	ndb, err := bolt.Open(gid, 0600, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ndb.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("event"))
+
+		v := b.Get([]byte(en))
+
+		if len(v) == 0 {
+			return errors.New("event not found error")
+		}
+
+		_ = json.Unmarshal(v, &retEvt)
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	defer ndb.Close()
+
+	return retEvt, nil
 }
 
 func (eg *EventGroup) RetrieveEvents() error {
@@ -115,6 +154,7 @@ func (eg *EventGroup) RetrieveEvents() error {
 	if err != nil {
 		return err
 	}
+	defer ndb.Close()
 	ndb.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("event"))
 
@@ -204,7 +244,7 @@ func (e *Event) GroupsToString() string {
 				outstr = outstr + "*" + v.Nick + "*\n"
 			}
 		}
-	} else {
+	} else if len(e.Groups) == 1 {
 		outstr = "**[Members]**\n"
 		for _, b := range e.Groups[0].Members {
 

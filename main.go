@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"strings"
 
@@ -88,6 +90,17 @@ func main() {
 
 	url := strings.Replace(Cfg.OauthLink, "CID", u.ID, -1)
 	fmt.Println(url)
+
+	//Establish gochannel with os.Signal, watch for ^C
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Printf("Closing Discord Bot %s\n", Cfg.Name)
+		_ = dg.Close()
+		os.Exit(0)
+	}()
+
 	<-make(chan struct{})
 	return
 
