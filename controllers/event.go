@@ -17,8 +17,9 @@ import (
 
 //EventGroup object which groups all the Event objects
 type EventGroup struct {
-	GuildID string  `json:"guild_id"`
-	Events  []Event `json:"events"`
+	GuildID   string  `json:"guild_id"`
+	GuildName string  `json:"guild_name"`
+	Events    []Event `json:"events"`
 }
 
 //Event object to represent events for the Discord chat
@@ -61,7 +62,7 @@ func NewEvent(n string, u discordgo.Member, m int, gID string) (*Event, error) {
 	return newEvent, nil
 }
 
-func (e *Event) AddStartDate(d string) error {
+func (e *Event) SetStartDate(d string) error {
 	layout := "2006-01-02 03:04PM"
 
 	sd, err := time.Parse(layout, d)
@@ -71,18 +72,50 @@ func (e *Event) AddStartDate(d string) error {
 	}
 	fmt.Println(sd)
 	e.StartDate = sd
+	err = e.UpdateEvent()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (e *Event) AddEndDate(d string) error {
+func (e *Event) SetEndDate(d string) error {
 	layout := "2006-01-02 03:04PM"
+
+	now := time.Now()
 
 	ed, err := time.Parse(layout, d)
 	if err != nil {
 		fmt.Println("time parsing failed")
 		return err
 	}
+	if now.Unix() < ed.Unix() {
+		return errors.New("new end date is in the past")
+	}
 	e.EndDate = ed
+	err = e.UpdateEvent()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *Event) SetDesc(d string) error {
+
+	e.Desc = d
+	err := e.UpdateEvent()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *Event) SetMax(i int) error {
+	e.MaxMember = i
+	err := e.UpdateEvent()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -193,6 +226,21 @@ func NewGroup(n string, max int) *Group {
 		Name:      n,
 		MaxMember: max,
 	}
+}
+
+func NewEventGroup(gid string) *EventGroup {
+	return &EventGroup{
+		GuildID: gid,
+	}
+}
+
+func (eg *EventGroup) PrintPrettyEventStrings() string {
+	outstr := ":star: Events for " + eg.GuildName + " :star:\n\n"
+	for _, v := range eg.Events {
+		outstr = outstr + "  :zap: " + v.Name + "\n    Description: " + v.Desc + "\n    Max Member: " + strconv.Itoa(v.MaxMember) + "\n\n"
+
+	}
+	return outstr
 }
 
 /*
