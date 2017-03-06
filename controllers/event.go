@@ -79,6 +79,7 @@ func (e *Event) SetStartDate(d string) error {
 	return nil
 }
 
+//SetEndDate sets the end date for the event
 func (e *Event) SetEndDate(d string) error {
 	layout := "2006-01-02 03:04PM"
 
@@ -100,6 +101,7 @@ func (e *Event) SetEndDate(d string) error {
 	return nil
 }
 
+//SetDesc sets the description of the event
 func (e *Event) SetDesc(d string) error {
 
 	e.Desc = d
@@ -110,6 +112,7 @@ func (e *Event) SetDesc(d string) error {
 	return nil
 }
 
+//SetMax function sets the max number of participants for the event
 func (e *Event) SetMax(i int) error {
 	e.MaxMember = i
 	err := e.UpdateEvent()
@@ -148,6 +151,27 @@ func (e *Event) UpdateEvent() error {
 	})
 
 	defer ndb.Close()
+	return nil
+}
+
+func (e *Event) DeleteEvent() error {
+
+	ndb, err := bolt.Open(e.GuildID, 0600, nil)
+
+	if err != nil {
+		return err
+	}
+
+	ndb.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte("event"))
+
+		if err != nil {
+			return err
+		}
+
+		err = b.Delete([]byte(strings.ToLower(e.Name)))
+		return err
+	})
 	return nil
 }
 
@@ -317,6 +341,8 @@ func (e *Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 	e.Groups = e.Groups[0 : n+1]
 	e.Groups[n] = newGroup
 
+	e.UpdateEvent()
+
 }
 
 //AddMemberToGroup will add the member discordgo.Member to the group as an object
@@ -339,6 +365,11 @@ func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) error {
 
 		}
 
+	}
+	err := e.UpdateEvent()
+
+	if err != nil {
+		return err
 	}
 
 	return nil

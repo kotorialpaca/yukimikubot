@@ -113,6 +113,22 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 						s.ChannelMessageSend(m.ChannelID, "Event Configuration Set - Description has been successfully modified!")
 						return
 				*/
+				//!event delete EVENTNAME
+				case "delete":
+					name := m.Message.Content[14:]
+					evt, err := controllers.FindEvent(ch.GuildID, name)
+					if err != nil {
+						s.ChannelMessageSend(m.ChannelID, "Event cannot be found")
+						return
+					}
+					err = evt.DeleteEvent()
+					if err != nil {
+						s.ChannelMessageSend(m.ChannelID, "Event deletion failed")
+						return
+					}
+					s.ChannelMessageSend(m.ChannelID, strings.Replace("Event - @event has been successfully removed.", "@event", name, -1))
+					return
+
 				default:
 					//if the command line doesnt contain desc
 					if strings.Index(m.Message.Content, " desc ") == -1 {
@@ -120,38 +136,37 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 						if strings.Index(m.Message.Content, " max ") == -1 {
 							s.ChannelMessageSend(m.ChannelID, "Wrong parameter for EVENT CONF command")
 							return
-						} else {
-							//if the command contains max
-							name := m.Message.Content[12:strings.Index(m.Message.Content, "max")]
-							evt, err := controllers.FindEvent(ch.GuildID, name)
-							if err != nil {
-								s.ChannelMessageSend(m.ChannelID, "Specified event could not be found")
-							}
-							c, er := strconv.Atoi(cmd[len(cmd)-1])
-							if er != nil {
-								s.ChannelMessageSend(m.ChannelID, "Invalid Parameter for Max Number given")
-								return
-							}
-							evt.SetMax(c)
-							s.ChannelMessageSend(m.ChannelID, "Max number has been successfully modified")
-							return
 						}
-					} else {
-						//if the command line contains desc
-						name := m.Message.Content[12 : strings.Index(m.Message.Content, "desc")-1]
-						fmt.Println(name)
+						//if the command contains max
+						name := m.Message.Content[12:strings.Index(m.Message.Content, "max")]
 						evt, err := controllers.FindEvent(ch.GuildID, name)
 						if err != nil {
-							s.ChannelMessageSend(m.ChannelID, "Event cannot be found")
+							s.ChannelMessageSend(m.ChannelID, "Specified event could not be found")
+						}
+						c, er := strconv.Atoi(cmd[len(cmd)-1])
+						if er != nil {
+							s.ChannelMessageSend(m.ChannelID, "Invalid Parameter for Max Number given")
 							return
 						}
-						evt.SetDesc(m.Content[strings.Index(m.Message.Content, "desc")+6:])
-						s.ChannelMessageSend(m.ChannelID, "Event Configuration Set - Description has been successfully modified!")
+						evt.SetMax(c)
+						s.ChannelMessageSend(m.ChannelID, "Max number has been successfully modified")
+						return
+
+					}
+					//if the command line contains desc
+					name := m.Message.Content[12 : strings.Index(m.Message.Content, "desc")-1]
+					fmt.Println(name)
+					evt, err := controllers.FindEvent(ch.GuildID, name)
+					if err != nil {
+						s.ChannelMessageSend(m.ChannelID, "Event cannot be found")
 						return
 					}
+					evt.SetDesc(m.Content[strings.Index(m.Message.Content, "desc")+5:])
+					s.ChannelMessageSend(m.ChannelID, "Event Configuration Set - Description has been successfully modified!")
+					return
+
 					//s.ChannelMessageSendEmbed
 				}
-			//case "remove":
 
 			case "list":
 				if len(cmd) != 2 {
@@ -168,9 +183,15 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 				s.ChannelMessageSend(m.ChannelID, evtGrp.PrintPrettyEventStrings())
 				return
+			//!event EVENT NAME signup "GROUP NAME"
+			case "signup":
+				name := m.Message.Content[6 : strings.Index(m.Message.Content, "signup")-1]
+				evt, err := controllers.FindEvent(ch.GuildID, name)
 
-			//case "signup":
-
+				if err != nil {
+					s.ChannelMessageSend(m.ChannelID, "Could not find the event mentioned.")
+					return
+				}
 			//default for event param
 			default:
 				s.ChannelMessageSend(m.ChannelID, "Error - Invalid Command\nDISPLAY EVENT HELP HERE")
