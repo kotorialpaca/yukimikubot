@@ -79,7 +79,9 @@ func (e *Event) SetStartDate(d string) error {
 	return nil
 }
 
-//SetEndDate sets the end date for the event
+/*SetEndDate sets the end date for the event
+Takes a string in YYYY-MM-DD HH:MMAM
+*/
 func (e *Event) SetEndDate(d string) error {
 	layout := "2006-01-02 03:04PM"
 

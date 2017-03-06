@@ -192,6 +192,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 					s.ChannelMessageSend(m.ChannelID, "Could not find the event mentioned.")
 					return
 				}
+
 			//default for event param
 			default:
 				s.ChannelMessageSend(m.ChannelID, "Error - Invalid Command\nDISPLAY EVENT HELP HERE")
