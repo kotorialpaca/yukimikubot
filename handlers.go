@@ -20,7 +20,7 @@ func AppendHandlers(s *discordgo.Session) {
 }
 
 func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-
+	m.Message.Content = strings.TrimRight(m.Message.Content, " ")
 	ch, _ := s.Channel(m.ChannelID)
 	creator, _ := s.State.Member(ch.GuildID, m.Author.ID)
 
@@ -185,14 +185,27 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			//!event EVENT NAME signup "GROUP NAME"
 			case "signup":
-				name := m.Message.Content[6 : strings.Index(m.Message.Content, "signup")-1]
-				evt, err := controllers.FindEvent(ch.GuildID, name)
+				gname := m.Message.Content[6 : strings.Index(m.Message.Content, "signup")-1]
+				evt, err := controllers.FindEvent(ch.GuildID, gname)
 
 				if err != nil {
 					s.ChannelMessageSend(m.ChannelID, "Could not find the event mentioned.")
 					return
 				}
 
+				group := m.Message.Content[strings.Index(m.Message.Content, "signup")+7:]
+				err = evt.AddMemberToGroup(group, creator)
+				if err != nil {
+					s.ChannelMessageSend(m.ChannelID, "Wow, member dont exist yall")
+					return
+				}
+				truf := strings.Compare("signup", group)
+
+				if truf == 0 {
+					fmt.Println("aint truf")
+				} else {
+					fmt.Println("truf yo")
+				}
 			//default for event param
 			default:
 				s.ChannelMessageSend(m.ChannelID, "Error - Invalid Command\nDISPLAY EVENT HELP HERE")

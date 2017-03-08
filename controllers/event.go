@@ -348,7 +348,7 @@ func (e *Event) AddGroupToEvent(gn string, max int, author discordgo.Member) {
 }
 
 //AddMemberToGroup will add the member discordgo.Member to the group as an object
-func (e *Event) AddMemberToGroup(gn string, m discordgo.Member) error {
+func (e *Event) AddMemberToGroup(gn string, m *discordgo.Member) error {
 
 	for key, value := range e.Groups {
 		if strings.Compare(value.Name, gn) == 0 {
