@@ -362,7 +362,7 @@ func (e *Event) AddMemberToGroup(gn string, m *discordgo.Member) error {
 				value.Members = newM
 			}
 			value.Members = value.Members[0 : n+1]
-			value.Members[n] = m
+			value.Members[n] = *m
 			e.Groups[key] = value
 
 		}

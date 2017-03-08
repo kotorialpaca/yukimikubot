@@ -20,7 +20,7 @@ func AppendHandlers(s *discordgo.Session) {
 }
 
 func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	m.Message.Content = strings.TrimRight(m.Message.Content, " ")
+
 	ch, _ := s.Channel(m.ChannelID)
 	creator, _ := s.State.Member(ch.GuildID, m.Author.ID)
 
@@ -43,10 +43,14 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			!event conf EVT_NAME end END_TIME
 			!event conf EVT_NAME desc DESCRIPTIONS
 			!event conf EVT_NAME max MAXNUM
-			!event remove
+			!event remove EVT_NAME
 			!event list
 		*/
 		case "event":
+			if len(cmd) <= 1 {
+				s.ChannelMessageSend(m.ChannelID, "Event command halps")
+				return
+			}
 			switch strings.ToLower(cmd[1]) {
 			case "add":
 				maxnum := 0
@@ -57,7 +61,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 					return
 				}
 				newEvt, err := controllers.NewEvent(m.Message.Content[11:], *creator, maxnum, ch.GuildID)
-				//Implement DB Interaction
+				//Implement DB Interaction (naw done in controllers)
 				if err != nil {
 					s.ChannelMessageSend(m.ChannelID, strings.Replace("<@!user>, Error - Event Creation has failed", "user", creator.User.ID, -1))
 					return
@@ -67,6 +71,10 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				s.ChannelMessageSend(m.ChannelID, newEvt.PrintPrettyString())
 				return
 			case "conf":
+				if len(cmd) <= 2 {
+					s.ChannelMessageSend(m.ChannelID, "Event conf halps")
+					return
+				}
 				switch strings.ToLower(cmd[len(cmd)-3]) {
 				case "start":
 					name := m.Message.Content[12 : strings.Index(m.Message.Content, "start")-1]
@@ -183,31 +191,47 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 				s.ChannelMessageSend(m.ChannelID, evtGrp.PrintPrettyEventStrings())
 				return
-			//!event EVENT NAME signup "GROUP NAME"
-			case "signup":
-				gname := m.Message.Content[6 : strings.Index(m.Message.Content, "signup")-1]
-				evt, err := controllers.FindEvent(ch.GuildID, gname)
 
-				if err != nil {
-					s.ChannelMessageSend(m.ChannelID, "Could not find the event mentioned.")
-					return
-				}
-
-				group := m.Message.Content[strings.Index(m.Message.Content, "signup")+7:]
-				err = evt.AddMemberToGroup(group, creator)
-				if err != nil {
-					s.ChannelMessageSend(m.ChannelID, "Wow, member dont exist yall")
-					return
-				}
-				truf := strings.Compare("signup", group)
-
-				if truf == 0 {
-					fmt.Println("aint truf")
-				} else {
-					fmt.Println("truf yo")
-				}
 			//default for event param
 			default:
+
+				// !event EVENT NAME signup "GROUP NAME"
+				if strings.Contains(m.Content, "signup") {
+					gname := m.Message.Content[7 : strings.Index(m.Message.Content, "signup")-1]
+					fmt.Println(gname)
+					evt, err := controllers.FindEvent(ch.GuildID, gname)
+
+					if err != nil {
+						s.ChannelMessageSend(m.ChannelID, "Could not find the event mentioned.")
+						return
+					}
+					if len(m.Content) < 15+len(gname) {
+						s.ChannelMessageSend(m.ChannelID, "You forgot to enter the group name fool.")
+						return
+					}
+					group := m.Message.Content[strings.Index(m.Message.Content, "signup")+7:]
+					err = evt.AddMemberToGroup(group, creator)
+					if err != nil {
+						s.ChannelMessageSend(m.ChannelID, "Wow, member dont exist yall")
+						return
+					}
+					s.ChannelMessageSend(m.ChannelID, "You have been successfully signed up for the group!")
+					return
+				}
+				if strings.Contains(m.Content, "group") {
+					//!event EVENT NAME group ADD GROUP NAME
+					if strings.Contains(m.Content, "add") {
+
+					}
+					//!event EVENT NAME group remove GROUP NAME
+					if strings.Contains(m.Content, "remove") {
+
+					}
+					//!event EVENT NAME group list
+					if strings.Contains(m.Content, "list") {
+
+					}
+				}
 				s.ChannelMessageSend(m.ChannelID, "Error - Invalid Command\nDISPLAY EVENT HELP HERE")
 				return
 			}
